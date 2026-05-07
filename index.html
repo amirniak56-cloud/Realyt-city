@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>REALITY city Samp · نظام النخبة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+    --bg-base: #000000;
+    --surface: #050505;
+    --surface-panel: rgba(10, 10, 12, 0.85);
+
+    /* الأزرق البارد */
+    --primary-color: #00bfff;
+    --primary-glow: rgba(0, 191, 255, 0.55);
+
+    --text-main: #ffffff;
+    --text-dim: #7a8a99;
+
+    --cyber-border: 1px solid rgba(0, 191, 255, 0.25);
+
+    --clip-cyber: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    --clip-card: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+}
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--bg-base);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
+
+        /* تعديل أساسي لمنع انزلاق الشاشة في الجوال */
+        html, body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+            position: relative;
+            font-size: 16px;
+        }
+
+        body {
+            display: flex;
+        }
+
+        /* تأثير الشاشة القديمة (CRT Scanlines) */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* تأثير الوميض الخفي */
+        .ambient-glow {
+            position: fixed;
+            top: 50%; left: 50%;
+            width: 80vw; height: 80vw;
+            background: radial-gradient(circle, rgba(0,191,255,0.08) 0%, transparent 60%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulseGlow 8s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* ---------------- الشريط الجانبي (Terminal Menu) ---------------- */
+        .sidebar {
+            width: 300px;
+            background: var(--surface-panel);
+            backdrop-filter: blur(20px);
+            border-left: var(--cyber-border);
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem 1.5rem;
+            z-index: 1000;
+            box-shadow: -10px 0 50px rgba(0,0,0,0.9);
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 50px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+            position: relative;
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+        .logo span { color: var(--primary-color); }
+        .logo::before {
+            content: 'SYS.ONLINE';
+            position: absolute;
+            top: -20px; right: 50%; transform: translateX(50%);
+            font-size: 0.7rem; color: #00ff66; letter-spacing: 5px;
+        }
+
+        .nav-label {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 900;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-label::before { content: ''; width: 10px; height: 2px; background: var(--primary-color); }
+
+        .sidebar-nav { display: flex; flex-direction: column; gap: 12px; }
+
+        .sidebar-nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 15px 20px;
+            font-weight: 800;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,0,0,0.5);
+            clip-path: var(--clip-cyber);
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sidebar-nav a::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,191,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .sidebar-nav a:hover::before { left: 100%; }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active-link {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-glow);
+            transform: scale(1.05);
+        }
+
+        .sidebar-nav a i { font-size: 1.3rem; transition: 0.3s; color: inherit; }
+
+        /* ---------------- المحتوى الرئيسي (Grid System) ---------------- */
+        .main-wrapper {
+            margin-right: 300px;
+            width: calc(100% - 300px);
+            padding: 3rem 4rem;
+            min-height: 100vh;
+            overflow-x: hidden; /* لمنع الانزلاق الداخلي */
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .bento-item {
+            background: var(--surface-panel);
+            padding: 40px;
+            position: relative;
+            clip-path: var(--clip-card);
+            border: var(--cyber-border);
+            border-top: 3px solid var(--primary-color);
+            transition: all 0.4s ease;
+        }
+
+        .bento-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--primary-glow);
+            background: #0f0f12;
+        }
+
+        /* تأثير الـ Glitch على الهيرو */
+        .bento-hero {
+            grid-column: span 12;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: url('https://via.placeholder.com/1600x800/050505/050505') center/cover;
+            position: relative;
+            padding: 60px;
+        }
+        .bento-hero::after {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: radial-gradient(circle at right, transparent 0%, #000 80%);
+            z-index: 0;
+        }
+
+        .hero-text { position: relative; z-index: 1; }
+        .hero-text h1 {
+            font-size: 5rem; font-weight: 900; margin-bottom: 20px; line-height: 1; text-transform: uppercase;
+            position: relative;
+            color: #fff;
+        }
+        
+        .glitch-effect { position: relative; display: inline-block; }
+        .glitch-effect::before, .glitch-effect::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base);
+        }
+        .glitch-effect::before { left: 3px; text-shadow: -2px 0 #00bfff; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch-effect::after { left: -3px; text-shadow: -2px 0 #66d9ff; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim {
+            0% { clip: rect(15px, 9999px, 71px, 0); } 20% { clip: rect(35px, 9999px, 93px, 0); }
+            40% { clip: rect(83px, 9999px, 11px, 0); } 60% { clip: rect(4px, 9999px, 55px, 0); }
+            80% { clip: rect(66px, 9999px, 16px, 0); } 100% { clip: rect(22px, 9999px, 88px, 0); }
+        }
+
+        .hero-text p {
+            font-size: 1.4rem; color: var(--text-dim); max-width: 600px; font-weight: 600;
+            border-right: 4px solid var(--primary-color); padding-right: 20px;
+        }
+        .hero-image { position: relative; z-index: 1; }
+        .hero-image img {
+            width: 500px; filter: grayscale(100%) contrast(1.2); transition: 0.5s;
+            clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 25%);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .hero-image:hover img { filter: grayscale(0) contrast(1.1); box-shadow: 0 0 40px var(--primary-glow); }
+
+        /* مجتمع رياليتي + الديسكورد */
+        .bento-community {
+            grid-column: span 8; font-size: 1.25rem; line-height: 2.2; color: #a1a1aa; font-weight: 600;
+        }
+        .bento-community h2 { color: #fff; margin-bottom: 25px; font-size: 2.2rem; text-transform: uppercase; display: flex; align-items: center; gap:15px;}
+        .bento-community h2 i { color: var(--primary-color); }
+
+        .bento-discord {
+            grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            background: radial-gradient(circle at center, #5865F2 0%, #1e213a 100%); color: #fff; text-decoration: none;
+            border-top: 3px solid #5865F2;
+        }
+        .bento-discord i { font-size: 6rem; margin-bottom: 15px; filter: drop-shadow(0 0 20px #5865F2); transition: 0.3s; }
+        .bento-discord:hover i { transform: scale(1.15) translateY(-10px); }
+
+        /* قسم تويتر */
+        .bento-twitter {
+            grid-column: span 12; display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(90deg, rgba(29,161,242,0.1), rgba(0,0,0,0.8)); border-left: 5px solid #1DA1F2; border-top: none;
+        }
+        .twitter-info h3 { font-size: 2.5rem; color: #1DA1F2; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px;}
+        .twitter-info p { max-width: 800px; color: var(--text-dim); font-size: 1.2rem; font-weight: 600;}
+        .btn-cyber {
+            background: transparent; color: #1DA1F2; padding: 18px 45px; font-weight: 900; text-decoration: none;
+            clip-path: var(--clip-cyber); font-size: 1.3rem; transition: 0.3s; border: 2px solid #1DA1F2;
+            position: relative; overflow: hidden;
+        }
+        .btn-cyber:hover { background: #1DA1F2; color: #000; box-shadow: 0 0 30px rgba(29,161,242,0.6); }
+
+        /* قسم الفيديو */
+        .bento-video { grid-column: span 12; padding: 0; aspect-ratio: 21/9; border: 1px solid var(--primary-color); }
+        .video-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .video-overlay button {
+            background: var(--primary-color); color: #fff; border: none; padding: 20px 60px; font-size: 1.5rem;
+            font-weight: 900; cursor: pointer; transition: 0.3s; clip-path: var(--clip-cyber); text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .video-overlay button:hover { background: #fff; color: var(--primary-color); box-shadow: 0 0 40px var(--primary-glow); transform: scale(1.05); }
+        .video-iframe { width: 100%; height: 100%; border: none; }
+
+        /* صناع المحتوى */
+        .bento-creators-title { grid-column: span 12; text-align: center; margin-top: 50px; }
+        .bento-creators-title h2 { font-size: 2.8rem; color: #fff; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; }
+        .bento-creators-title h2 span { color: var(--primary-color); }
+        
+        .bento-creator {
+            grid-column: span 3; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center;
+            background: rgba(10,10,12,0.6); border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .bento-creator:hover { background: rgba(0,191,255,0.1); border-color: var(--primary-color); }
+        .bento-creator img {
+            width: 110px; height: 110px; object-fit: cover; border: 3px solid #222; margin-bottom: 25px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .bento-creator:hover img { border-color: var(--primary-color); transform: scale(1.15) rotate(15deg); box-shadow: 0 0 30px var(--primary-glow); }
+        .bento-creator h4 { color: #fff; font-size: 1.4rem; margin-bottom: 10px; font-weight: 900; }
+        .bento-creator p { color: var(--primary-color); font-size: 1rem; font-weight: 900; background: rgba(0,191,255,0.1); padding: 5px 15px; border-radius: 5px; }
+
+        /* ==========================================================================
+           قسم القوانين (البار الأفقي الخرافي)
+           ========================================================================== */
+        .rules-section { display: none; width: 100%; max-width: 1400px; margin: 0 auto; animation: glitchOpen 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        @keyframes glitchOpen { 0% { opacity: 0; transform: scaleY(0); filter: blur(10px); } 100% { opacity: 1; transform: scaleY(1); filter: blur(0); } }
+
+        .rules-nav-container {
+            position: relative;
+            margin-bottom: 40px;
+            padding-bottom: 10px;
+            width: 100%;
+            overflow: hidden; /* لحماية الأطراف */
+        }
+
+        .rules-nav-bar {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 10px 25px 10px;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
+        .rules-nav-bar::-webkit-scrollbar { display: none; }
+        
+        .rule-tab {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 135px;
+            height: 125px;
+            background: #08080a;
+            border: 2px solid #222;
+            border-radius: 16px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rule-tab i { font-size: 2.8rem; margin-bottom: 12px; z-index: 2; transition: 0.3s; }
+        .rule-tab span { font-size: 0.95rem; font-weight: 900; z-index: 2; transition: 0.3s; text-align: center; }
+        .rule-tab:hover { border-color: #444; color: #aaa; }
+
+        .rule-tab.active-tab {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(0, 191, 255, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .rule-tab.active-tab::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 6px); z-index: 1;
+        }
+
+        .rules-nav-track {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; background: #1a1a20; border-radius: 3px;
+        }
+
+        .rules-nav-indicator {
+            position: absolute; bottom: 0; right: 0; height: 5px; background: var(--primary-color); border-radius: 3px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .rule-card {
+            background: rgba(5,5,8,0.95); padding: 50px; clip-path: var(--clip-card);
+            border: 1px solid #222; border-top: 5px solid var(--primary-color);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+            width: 100%; overflow-x: hidden;
+        }
+        .rule-card h3 {
+            font-size: 3rem; color: #fff; margin-bottom: 40px; padding-bottom: 25px; text-transform: uppercase; font-weight: 900;
+            border-bottom: 2px solid rgba(0,191,255,0.3); display: flex; align-items: center; gap: 20px;
+        }
+        .rule-card h3 i { color: var(--primary-color); }
+        .rule-card ul { list-style: none; }
+        .rule-card li {
+            margin-bottom: 20px; padding: 25px; background: rgba(20,20,25,0.6); border-right: 5px solid #333;
+            font-size: 1.2rem; color: #e2e8f0; display: flex; gap: 20px; font-weight: 600; line-height: 1.9; transition: 0.3s;
+        }
+        .rule-card li:hover { background: rgba(0,191,255,0.05); border-right-color: var(--primary-color); transform: translateX(-5px); }
+        .rule-card li i { color: var(--primary-color); margin-top: 8px; font-size: 1rem;}
+
+        .edit-note { 
+            background: repeating-linear-gradient(45deg, rgba(25,25,30,1), rgba(25,25,30,1) 10px, rgba(20,20,25,1) 10px, rgba(20,20,25,1) 20px);
+            color: var(--text-dim); padding: 20px; margin-top: 40px; font-weight: 800; border: 1px solid #333; display: flex; align-items: center; gap: 15px;
+        }
+        .edit-note i { color: #00ff66; font-size: 1.5rem; }
+
+        .scroll-top-btn {
+            position: fixed; bottom: 40px; left: 40px; width: 60px; height: 60px; background: var(--primary-color); color: #fff;
+            border: none; font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); transition: 0.3s;
+        }
+        .scroll-top-btn.show { opacity: 1; visibility: visible; }
+        .scroll-top-btn:hover { background: #fff; color: var(--primary-color); transform: translateY(-10px); box-shadow: 0 10px 30px var(--primary-glow);}
+
+        footer { text-align: center; margin-top: 60px; color: #444; font-weight: 900; grid-column: span 12; padding-bottom: 40px; letter-spacing: 3px;}
+
+        /* ---------------- استجابة الهواتف (تم حل مشكلة الانزلاق 100%) ---------------- */
+        @media (max-width: 1400px) { .bento-creator { grid-column: span 6; } }
+        @media (max-width: 992px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; padding: 1.5rem; flex-direction: column; border-left: none; border-bottom: 3px solid var(--primary-color); }
+            .logo { margin-bottom: 20px; font-size: 26px; }
+            .nav-label { display: none; }
+            .sidebar-nav { flex-direction: row; overflow-x: auto; width: 100%; flex-wrap: nowrap; margin: 5px 0; gap: 10px;}
+            .sidebar-nav a { white-space: nowrap; font-size: 1rem; padding: 12px 25px; clip-path: none; border-radius: 8px; border: 1px solid #222;}
+            
+            /* هنا تم حل مشكلة الشاشة المقطوعة */
+            .main-wrapper { margin-right: 0; width: 100%; padding: 1.5rem 1rem; overflow-x: hidden; }
+            
+            .bento-hero { flex-direction: column; text-align: center; padding: 30px; }
+            .hero-text h1 { font-size: 3rem; }
+            .hero-text p { border-right: none; padding-right: 0; margin: 0 auto 30px; }
+            .hero-image img { width: 100%; max-width: 350px; clip-path: none; border-radius: 20px;}
+            
+            .bento-community, .bento-discord, .bento-twitter, .bento-video, .bento-creator { grid-column: span 12; }
+            .bento-twitter { flex-direction: column; text-align: center; gap: 30px; padding: 40px 20px;}
+            .bento-item { padding: 30px 20px; clip-path: none; border-radius: 20px;}
+            
+            .rule-card { padding: 25px 15px; clip-path: none; border-radius: 20px; width: 100%; overflow: hidden;}
+            .rule-card h3 { font-size: 1.8rem; flex-direction: column; text-align: center; gap: 10px;}
+            .rule-card li { font-size: 1.05rem; padding: 15px 10px; gap: 10px;}
+            
+            .rule-tab { width: 105px; height: 100px; }
+            .rule-tab i { font-size: 2rem; margin-bottom: 8px;}
+            .rule-tab span { font-size: 0.8rem; }
+            .scroll-top-btn { bottom: 20px; left: 20px; width: 50px; height: 50px; font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <aside class="sidebar">
+        <div class="logo">REALITY city <span>Samp</span></div>
+        
+        <div class="nav-label">اللوحة الرئيسية</div>
+        <nav class="sidebar-nav">
+            <a href="#" id="homeLink" class="active-link"><i class="fas fa-crosshairs"></i> مركز القيادة</a>
+            <a href="#" onclick="openRules(); return false;" id="rulesLink"><i class="fas fa-gavel"></i> الدستور والقوانين</a>
+            <a href="https://discord.gg/H5GFyYUpR" target="_blank"><i class="fab fa-discord"></i> الاتصال الآمن</a>
+        </nav>
+    </aside>
+
+    <main class="main-wrapper">
+        <div id="mainContent" class="bento-grid">
+            
+            <div class="bento-item bento-hero">
+                <div class="hero-text">
+                    <h1 class="glitch-effect" data-text="مدينة رياليتي">مدينة <br><span>رياليتي</span></h1>
+                    <p>أنت الآن في المنطقة الحمراء. البقاء هنا للأقوى، الاحترام يُنتزع ولا يُعطى. هل أنت مستعد لكتابة تاريخك في شوارعنا؟</p>
+                </div>
+                <div class="hero-image">
+                    <img src="https://i.imgur.com/placeholder.jpg" alt="REALITY city RP" onerror="this.src='https://via.placeholder.com/600x400/0a0a0c/00bfff?text=ELITE+SYSTEM';">
+                </div>
+            </div>
+
+            <div class="bento-item bento-community">
+                <h2><i class="fas fa-database"></i> تقرير النظام // المجتمع</h2>
+                مجتمع سيرفر "رياليتي" العربي هو مجتمع حيوي يجمع بين اللاعبين والمؤثرين والمشاهدين، مما يخلق بيئة تفاعلية وغنية. يشارك اللاعبون في بناء تجارب مميزة داخل السيرفر، بينما يسهم المؤثرون والاستريمرز في نشر المتعة والإثارة عبر البث المباشر، مما يعزز التفاعل والتواصل بين اللاعبين والجماهير.
+            </div>
+
+            <a href="https://discord.gg/H5GFyYUpR" target="_blank" class="bento-item bento-discord">
+                <i class="fab fa-discord"></i>
+                <h3 style="font-weight: 900; font-size: 1.8rem; text-transform: uppercase;">خوادم ديسكورد</h3>
+            </a>
+
+            <div class="bento-item bento-twitter">
+                <div class="twitter-info">
+                    <h3><i class="fab fa-twitter"></i> التردد العام (تويتر RP)</h3>
+                    <p>عيش الدور خارج اللعبة! شارك يوميات شخصيتك، تفاعل مع المواطنين، انشر الصور والأخبار الحصرية، وكن جزءاً من الترند في مدينة لوس سانتوس.</p>
+                </div>
+                <a href="#" target="_blank" class="btn-cyber">تنشيط الاتصال</a>
+            </div>
+
+            <div class="bento-item bento-video" id="videoContainer">
+                <div class="video-overlay" id="videoOverlay">
+                    <button onclick="playVideo()">[ تشغيل السجل البصري ]</button>
+                </div>
+            </div>
+
+            <div class="bento-creators-title">
+    <h2><span>//</span> القيادة العليا <span>//</span></h2>
+</div>
+
+<a href="#" target="_blank" class="bento-item bento-creator">
+    <img src="image1.png" alt="Reda Dhx">
+    <h4>SouleYm4n</h4>
+    <p>OWNER CHIP</p>
+</a>
+
+<a href="#" target="_blank" class="bento-item bento-creator">
+    <img src="image2.png" alt="Br1">
+    <h4>DIPAK</h4>
+    <p>OWNER CHIP</p>
+</a>
+
+<a href="#" target="_blank" class="bento-item bento-creator">
+    <img src="image3.png" alt="Legendexact">
+    <h4>Mou4tez'Xd</h4>
+    <p>DEVLOPER</p>
+</a>
+
+<a href="#" target="_blank" class="bento-item bento-creator">
+    <img src="image4.png" alt="Yukki">
+    <h4>SKIKDI</h4>
+    <p>OWNER CHIP</p>
+</a>
+
+            <footer><p>REALITY city ELITE SYSTEM // EST. 2026 // ALL RIGHTS RESERVED.</p></footer>
+        </div>
+
+        <div id="rulesSection" class="rules-section">
+            
+            <div class="rules-nav-container">
+                <div class="rules-nav-bar" id="rulesNavBar">
+                    <a href="#" onclick="showRule('general', this); return false;" class="rule-tab active-tab" id="tab-general">
+                        <i class="fas fa-folder"></i><span>قوانين عامة</span>
+                    </a>
+                    <a href="#" onclick="showRule('important', this); return false;" class="rule-tab" id="tab-important">
+                        <i class="fas fa-exclamation-triangle"></i><span>قوانين مهمة</span>
+                    </a>
+                    <a href="#" onclick="showRule('admin', this); return false;" class="rule-tab" id="tab-admin">
+                        <i class="fas fa-user-shield"></i><span>قوانين الإدارة</span>
+                    </a>
+                    <a href="#" onclick="showRule('police', this); return false;" class="rule-tab" id="tab-police">
+                        <i class="fas fa-shield-alt"></i><span>قوانين الشرطة</span>
+                    </a>
+                    <a href="#" onclick="showRule('ems', this); return false;" class="rule-tab" id="tab-ems">
+                        <i class="fas fa-heartbeat"></i><span>قوانين الصحة</span>
+                    </a>
+                    <a href="#" onclick="showRule('gang', this); return false;" class="rule-tab" id="tab-gang">
+                        <i class="fas fa-skull"></i><span>قوانين العصابات</span>
+                    </a>
+                    <a href="#" onclick="showRule('criminal', this); return false;" class="rule-tab" id="tab-criminal">
+                        <i class="fas fa-user-secret"></i><span>قوانين الإجرام</span>
+                    </a>
+                    <a href="#" onclick="showRule('glossary', this); return false;" class="rule-tab" id="tab-glossary">
+                        <i class="fas fa-terminal"></i><span>المصطلحات</span>
+                    </a>
+                </div>
+                <div class="rules-nav-track"></div>
+                <div class="rules-nav-indicator" id="navIndicator"></div>
+            </div>
+
+            <div id="ruleDisplay" class="rule-card"></div>
+            
+            <button class="btn-back" onclick="showHome()" style="display: block; width: fit-content; margin: 40px auto; background: var(--primary-color); color: #fff; padding: 15px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.3s; clip-path: var(--clip-cyber); border: none; text-transform: uppercase;">إغلاق قاعدة البيانات</button>
+            <footer><p>REALITY city ELITE SYSTEM // EST. 2026</p></footer>
+        </div>
+    </main>
+
+    <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+        <i class="fas fa-angle-up"></i>
+    </button>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            if (window.scrollY > 400) scrollBtn.classList.add('show');
+            else scrollBtn.classList.remove('show');
+        });
+
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+        // بيانات القوانين
+        const rulesData = {
+            general: {
+                title: 'قوانين عامة', icon: 'fa-folder',
+                items: [
+                    'ممنوع استخدام اي شخصية افتراضية الا من خلال المتجر فقط.',
+                    'ممنوع كتابة أسمك على شكل رموز مثال: (W_0)، او يكون اسم شخصيه مشهوره مثال: ( بابلو اسكوبار ) . ( دربحة ) الخ….',
+                    'لك الحق فى استخدام شخصية اجرامية والأخرى يجب ان تكون في اي جهة حكومية.',
+                    'ممنوع الستريم سنايب أو متابعة البثوث أثناء اللعب منعاً باتاً وعقوبتها شديدة.',
+                    'ممنوع نهائياً التواجد في الديسكورد او التواصل الخارجي لجميع اللاعبين.',
+                    'ممنوع الاعتداء على البوتات لاي سبب مهما كان ويجب ان تعتبره مواطن ويتم تطبيق القوانين عليه.',
+                    'يمنع طلب تعويض في حال خسرت فلوسك وأسلحتك وأغراضك بسبب التحلل أو نقلك إلى المستشفى.',
+                    'ممنوع الكتابة خارج "الرول بلاي" في تطبيق تويتر، ويمكن الكتابة فقط في الأمور الداخلة في إطار التمثيل وتقمص الشخصيات والسيناريوهات والأمور المكملة لها.',
+                    'ممنوع الدخول فى اى سناريو الا اذا كانت بينكم معرفه في الرول بلاي لمدة لا تقل عن ثلاث ايام.',
+                    'ممنوع القذف بالأعراض والشتم والكلام البذيء والكلام الطائفي أو السياسي أو الديني أو القبلي ويعتبر مخالف للنظام العام وربما تصل إلى حظرك من السيرفر نهائياً ومن غير تنبيه.',
+                    'يمنع استخدام كلمات غير مفهومه او كلام مشفر او التلميح و السب او الشتم او كلمات غير عاميه.',
+                    'يمنع طلب الخدمات المتاحة بالجوال بقصد الخطف أو القتل أو السرقة أو بغير الاستفادة من الخدمة.',
+                    'يمنع توزيع الفلوس أو التسليف أو ما شابه بين اللاعبين بمبالغ كبيرة : ( 10الاف فما فوق ) يجب ان تكون بين الطرفين معرفه لا تقل عن ثلاث ايام.',
+                    'ممنوع منعاً باتاً قتل الأشخاص في حال كانوا ينفذون الاوامر او بحجة النسيان.',
+                    'مشاركتك لاي من معلوماتك او حساباتك الشخصية ( قوقل – روك ستار – سامب – دسكورد ) مع اي شخص كان واستخدامها للدخول الى السيرفر يعرضكم جميعا للباند النهائي.',
+                    'يمنع ان تحمل شخصين في نفس الوقت – ( حمل + سحب ) مهما كانت الاسباب.',
+                    'تنبيه على القيادة الغير واقعيه في حال تم رصد اي مواطن يقود مركبته بطريقة غير واقعيه ( سرعة بدون سبب – قطع اشارات بدون سبب – تهور في القيادة بدون سبب ) و الى مالا ذلك … سيكون عليها تحذير PowerGamming الرجاء القيادة بشكل واقعي تجنبا من التحذيرات او الباند.',
+                    '* [يحق للرقابه المحاسبه على جميع الاخطاء حتى لو لم تكن ضمن القوانين]'
+                ]
+            },
+            important: {
+                title: 'قوانين مهمة', icon: 'fa-exclamation-triangle',
+                items: [
+                    'قوانين الحياة الجديدة - NLR: في حال اغمائك بشكل كامل لا يمكنك الكلام او الحركة او فعل اي شيء. في حال تم اسقاطك من قبل شخص و تم انعاشك من قبل مسعفين تستطيع تذكر جميع الاحداث. في حال تم احراق جثك لا تستطيع تذكر اي شي حصل لك (منها العداوات او السناريوهات).',
+                    'قانون تقدير الحياة - NWL: هي الحفاظ على حياتك وحياة الآخرين، وعدم التهور، وأن لا تستهين بقتل الأشخاص، وأن لا تقاوم المجرم أو الشرطة او اي شخص يحمل سلاح مهما كان خصوصاً اذا كنت أعزل. وهذا لا يمنع استعمال حق الدفاع عن النفس عند الضرورة التي تمنعك من طلب مساعدة الشرطة، وبكل الأحوال يجب محاورة اللاعب بشكل جيد والتفاوض معه قبل الشروع بأي عمل يعرض حياة اللاعب الآخر للخطر.',
+                    'القتل العشوائي - RDM: قتل الأشخاص دون سبب, تهديد, بصورة عشوائية او بدون عداوة يعتبر القتل العشوائي ممنوع ومخالف للنظام العام للسيرفر.',
+                    'الميتا جيمنج Metagaming: اي معلومة تحصل عليها من خارج المدينة مثال معلومة حصلت عليها من بث او دسكورد او مقطع باليوتيوب كلها تعتبر مخالفة.',
+                    'الخوف على الحياة - NVL: عدم الخوف بشكل واقعي على حياتك عندما تتعرض للتهديد بالأسلحة أو بأذى شديد من وسائل أخرى يعتبر الخوف على الحياة شي اساسي ومهم جدا مثال: اذا كان هناك اداة تعرض حياتك للخطر.'
+                ]
+            },
+            admin: {
+                title: 'قوانين الإدارة', icon: 'fa-user-shield',
+                items: [
+                    'قرارات الإدارة نهائية وغير قابلة للنقاش.',
+                    'الإدارة ملزمة بتطبيق القانون بعدل.',
+                    'الأونر هو المرجع الأعلى.',
+                    'أي شكوى ضد إداري تقدم للأونر فقط.',
+                    'الاحترام متبادل بين الإدارة واللاعبين.'
+                ]
+            },
+            police: {
+                title: 'قوانين الشرطة', icon: 'fa-shield-alt',
+                items: [
+                    '🔳 قوانين وتعليمات شرطة رياليتي 🔲',
+                    '🔳 يجب أن يكون رجل الأمن مهذب تجاه المواطنين ومع زملائهم , يجب أن يكون لبقاً في أداء واجبه، متحكم في اعصابه ويتحمل أقصى درجات الصبر وتقدير. حتى في مواجهة الاستفزاز الشديد. لا يجوز لهم استخدامها لغة أو إيماءات بذيئة أو عنيفة أو بذيئة تجاه المواطنين أو زملائه في شرطة رياليتي.',
+                    '⬜ لا يجوز لرجال الأمن ارتكاب أي عمل من أعمال الفساد. وعليهم أيضا معارضة ومكافحة كل هذه الأعمال بصرامة و الإبلاغ عنها.',
+                    '⬜ يجب على رجال الأمن تطبيق القانون ، في أدائهم لواجبهم ، احترام وحماية كرامة الإنسان والحفاظ على حقوق الإنسان لجميع الأشخاص ودعمها.',
+                    '⬜ لا يجوز لرجال الأمن استخدام القوة الإجبارية إلا عند الضرورة القصوى او عند الاعتداء عليه بالضرر وتكون بالقدر المطلوب لأداء واجبهم.',
+                    '⬜ يمكن لرجل الأمن ممارسة عمله و تطبيق القانون كلما اقتضت الظروف ذلك ، سواء أكان بالزي الرسمي أو حتى وهو خارج الدوام.',
+                    '⬜ يجب الحفاظ على سرية الأمور العسكرية ذات الطبيعة السرية التي في متناول رجل الأمن عن تطبيق القانون ، ما لم يتطلب أداء الواجب أو متطلبات العدالة خلاف ذلك بشكل صارم.',
+                    '🔳 يجب على رجال الأمن ضمان الحماية الكاملة لصحة الأشخاص المحتجزين لديهم ،و يجب عليهم اتخاذ إجراءات فورية لتأمين العناية الطبية عند الاقتضاء.',
+                    '▬▬▬▬▬▬▬▬▬▬',
+                    '🔴 تعتبر الخيانة او التمرد انهيارًا خطيرًا في الانضباط والنظام داخل حكومة رياليتي. لذلك ،، فإن أي رجل امن يكون متمردًا تجاه حكومة رياليتي يخضع لإجراءات تأديبية قد تؤدي إلى إنهاء الخدمة أو الإعدام بالرصاص.',
+                    '🔴 يشمل التمرد او الخيانة ما يلي:-',
+                    '🔳 لغة وقحة أو مسيئة أو أفعال تجاه الضابط المشرف أو غيره عضو معين للقيادة .',
+                    '🔳 الإخفاق أو الرفض المتعمد للامتثال لأمر قانوني صادر عن هذا الضابط أو من القيادات .',
+                    '🔳 السخرية من أوامر عضو معين في القيادة أو الضابط المشرف سواء بحضورهم او غيابهم .',
+                    '🔳 لا يجوز لرجال الأمن ، في أي وقت ، عدم احترام رئيسهم بأي طريقة كانت.',
+                    '▬▬▬▬▬▬▬▬▬▬',
+                    '⬜ معاملة المحبوسين',
+                    'أ. لن يسيء رجال الشرطة معاملة المحتجزين لديه. سوف يتعاملون مع الأشخاص وفقًا للإجراءات المعمول بها.',
+                    'ب. لا يجوز لموظف الشرطة في رياليتي، دون سلطة مناسبة ، الإفراج عن أي سجين من مسؤوليته ، أو الإهمال أو تركه.',
+                    '⬜ حقوق المواطن اثناء القاء القبض عليه',
+                    '[ تم القبض عليك من قبل شرطة LSPD يجب عليك التزام الصمت الى حين وضعك في غرفة التحقيق او الزنزانة. أي شيء ستقوله يمكن ان يستخدم ضدك في التحقيق. لديك الحق في طلب محاميك اذا كان متوفر. ]',
+                    '▬▬▬▬▬▬▬▬▬▬',
+                    '🔳 استخدام القوة',
+                    'لن يستخدم رجل الأمن ، بصفته الرسمية ، القوة غير الضرورية أو المفرطة. سيستخدم رجال الأمن الحد الأدنى من القوة اللازمة للتأثير على عملية الاعتقال والتغلب على أي مقاومة معروضة.',
+                    '🔳 الأسلحة النارية',
+                    'لا يجوز استخدام الأسلحة أو عرضها أو التعامل معها بطريقة غير مبالية أو غير حكيمة أو تتعارض مع سياسة رياليتي',
+                    '🔳 عدم الكفاءة',
+                    'يتحمل رجال الأمن المسؤولية الكاملة عن حسن أداء واجباتهم. يجب أن يحافظ رجال الأمن على الكفاءة الكافية لأداء واجباتهم بشكل صحيح . يؤدي رجال الأمن واجباتهم بطريقة تحافظ على أعلى مستويات الكفاءة في تنفيذ مهام وأهداف إدارة الشرطة.',
+                    '🔳 لا يجوز لرجل الأمن ، أثناء أداء مهام إنفاذ القانون ، أن يطلب ، من أجل منفعة شخصية ، معلومات شخصية من المواطنين أو يقدم معلومات شخصية عن أنفسهم ، والتي يمكن تفسيرها بشكل معقول على أنها تستخدم مناصبهم كموظف شرطة لتحقيق منفعة شخصية أو اسباب شخصية.',
+                    '🔳 أثناء الاتصال بالرجل الأمن المخالف، لن يطلب رجل الأمن معلومات شخصية من رجل امن مخالف و / أو يقدم معلومات مماثلة لأي سبب بخلاف ذلك الذي قد يكون مطلوبًا بشكل معقول لأغراض إنفاذ القانون.',
+                    '▬▬▬▬▬▬▬▬▬▬',
+                    '`هذه القوانين قابله للتعديل من قبل ادارة رياليتي RTPD في أي وقت`',
+                    '`REALITY city City Police Department`'
+                ]
+            },
+            ems: {
+                title: 'قوانين الصحة', icon: 'fa-heartbeat',
+                items: [
+                    '🔴 يمنع لموظفين وزارة الصحة الدخول الى منطقة سيناريو الا بعد انتهاء السيناريو وقد لا يتم تطبيق هاذا القانون باسباب يحددها الامن الوطني',
+                    '🔴 يمنع لموظفين وزارة الصحة استخدام سيارات غير تابعة للوزارة في حالة لم تكن بإجازة',
+                    '🔴 يمنع لموظفين وزارة الصحة بالقتل او التلويت داخل المدينة او بالخارج',
+                    '🔴 يمنع استخدام الراديو لأغراض اخرى غير متعلقة بأمور الصحة',
+                    '🔴 يمنع تزويد أي احد بال PainKiller بدون تصريح موثوق من الوزير',
+                    '🔴 يمنع تكون داخل عصابة أو منظمة',
+                    '🔴 يمنع التعامل مع المجرمين أو المنظمات الإرهابية',
+                    '🟢 مسموح لوزارة الصحة باحتجاز مجرم داخل المستشفى بعد معالجته في حال قامت احد الوزارات بطلب ذالك',
+                    '🟢 يمنع لموظفين وزارة الصحة لبس ملابس غير تابعة للوزارة في حالة لم تكن بإجازة',
+                    '🟢 مسموح لافراد الصحة المشاركة بالسيناريوهات لمعالجة افراد الوزارة ولكن يمكن للعصابات قتلهم بالسيناريو وذالك يسموح لافراد الصحة المشاركة بالسيناريوهات لمعالجة افراد الوزارة',
+                    '▬▬▬▬▬▬▬▬▬▬',
+                    '`هذه القوانين قابلة للتعديل من قبل ادارة رياليتي RTEM بأي وقت`',
+                    '`REALITY city City Emergency Medical`'
+                ]
+            },
+            gang: {
+                title: 'قوانين العصابات', icon: 'fa-skull',
+                items: [
+                    '🔴 تعتبر هذة القوانين خاصة بالعصابات ويجب على الجميع الالتزام بكل البنود مع الألتزام بجميع القوانين الخاصة بالسيرفر حيث تكون القوانين كامله مدمجه ومكمله لبعضها',
+                    '🔴 يمنع منعا باتا التواجد في اي ديسكورد للعصابات غير الديسكورد الرسمي لـ المدينة رياليتي واذا تم رصدك فى اي ديسكورد اخر سيتم محاسبتك رقابياً',
+                    '⚪ التقديم على طلب تكوين اجرامي او الترقيه لـ مستوى اخر لا يعني القبول من الممكن التأجيل او الالغاء لـ الطلب فرجاء الانتظار لحين الرد عليك فى التذكره',
+                    '🔴 لا يمكن للعصابات الاتحاد في الفايت او العداوة مع عصابة اخرى سواء مع عصابة او مع الشرطة',
+                    '🔴 لا يمكن ان يتم اعلان العداوه او حرب العصابة الا من خلال تأكيد بين قائده العصابتين',
+                    '🟢 في حال وقع فايت بين عصابتين في مكان مأهول بالسكن يحق للشرطة التدخل بشكل مباشر و اذا كان في مكان نائي يحق للشرطة التدخل بشكل غير مباشر',
+                    '🔴 لا تتكون عداوة بين عصابتين بسبب خطف احد اعضائها الا اذا كانت عصابة ذات سلطة اجرامية او اذا كان المخطوف هو قائد العصابة',
+                    '🔴 لا يمكن الاتفاق على اى حدث بين اي عصابتين الا من خلال الموافقه الكاملة من مسئول العصابات او النائب',
+                    '🟢 عند وجود اى تعدي من افراد العصابة على قوانين العصابات سيتم اتخاذ العقوبات اللازمه مع العصابة',
+                    '🔴 يمنع استقطاب أعضاء العصابة بشكل عشوائي ويجب ان يوجد ثقة مبنية داخل الرول بلاي',
+                    '🟢 يجب الالتزام بالقوانين العامة للسيرفر تجنبا للعقوبات',
+                    '🟢 قائد العصابة هو المسؤول الأول والاخير امام الإدارة في المخالفات الجماعية',
+                    '🔴 تعطى العصابة تحذير او أكثر في حال مخالفة القوانين وعند التكرار قد تصل الى تصفير كامل العصابة',
+                    '🟢 تتكون العداوة بين عصابتين الا لأسباب مقنعة ويجب ان تكون مصورة',
+                    '🔴 في حال عدم التواجد او التفاعل في اى عصابه من العصابات المتاحة سيتم تصفير العصابه بدون الرجوع الى البوس',
+                    '🔴 عدد التحذيرات لتصفير العصابه 3 تحذيرات فقط',
+                    '🔴 لن يتم الغاء تحذير العصابه الا بعد شهر من اخذ التحذير',
+                    '🔴 في حال أخذت العصابة تحذيرين سيتم مضاعفة مدة التحذيرات على العصابة',
+                    '🟢 يحق لمسؤول العصابات تعديل او حذف او اضافة القوانين في اي وقت لذلك يجب مراجعة القوانين من حين لاخر.'
+                ]
+            },
+            criminal: {
+                title: 'قوانين الإجرام', icon: 'fa-user-secret',
+                items: [
+                    '🔴 ممنوع ملاحقة العساكر بغرض محاولة المضايقات اوالتدخل بعملهم او الترصد و بناء عداوة معهم.',
+                    '🔴 يمنع منعاً باتاً التحلل او الخروج من المدينة نهائياً الأ بعد 10 دقايق من بعد انتهاء السناريو.',
+                    '🔴 ممنوع الدخول فى اى سناريو الا اذا كانت بينكم معرفه في الرول بلاي لمدة لا تقل عن اسبوع.',
+                    '🔴 يمنع طلب الخدمات المتاحة بالجوال بقصد الخطف أو القتل أو السرقة أو بغير الاستفادة من الخدمة.',
+                    '⚪ في حال رفع عليك شخص سلاح ناري او سلاح ابيض يجب عليك ان تستلم بشكل كامل للشخص. و ان كان هناك اي مخالفه في السناريو يجب عليك مجارتها في الاحداث و ان تستكمل السناريو حتى النهايه.',
+                    '🟢 النشاط الاجرامي يقتصر على 6 اشخاص فقط شامل التدخل الخارجي ضد العسكر.',
+                    '🔴 يمنع انك تخطف شخص في مكان عام او غيرها من الاماكن -يجب عليك سحب الشخص الى مكان خالي من الاشخاص و تتغاضى عن الانظار و بعدها تستطيع خطف الشخص.',
+                    '🔴 يمنع ان تاخذ احد معارفك سواءً كنت في عصابه او زملاء كرهينة يجب عليك اخذ رهينة ليس بينك وبينها معرفه.',
+                    '🔴 ممنوع منعاً باتاً قتل الأشخاص في حال كانوا ينفذون الاوامر او بحجة النسيان.',
+                    '🟢 يسمح لك السرقه في الاماكن المشبوه مثل بيع المخدرات او الجزيره او مكان بيع الممنوعات و غيرها من الاماكن المشبوه بعد تهديد الاشخاص.',
+                    '🔴 ممنوع تسرق وتهرب على طول، لازم تنتظر الشرطة على الأقل 10 دقائق.',
+                    '🔴 يمنع تلويت العساكر أو أخذ عتادهم الا في حال هجموا على مقركم',
+                    '🔴 في حال اسقطت عسكري او مجرم سواءً كنت في سناريو سرقه او غيرها يمنع انك تنقل العسكري او المجرمين للمستشفى بعد انتهاء الفايت الا اذا كان الشخص في عصابتك او مجموعتك.',
+                    '🔴 عند تبادل اطلاق النار بين طرفين يمنع انك تكون حامل شخص بيدك خلال اطلاق النار يجب انزال الشخص و بعدها تستطيع ان تتبادل اطلاق النار.',
+                    '🔴 ممنوع اعطاء اي من المعلومات الاجرامية او اي شئ يخص الاجرام بشكل كامل للغرباء الا بعد معرفه تتجاوز اسبوع كامل.',
+                    '🟢 يحق لك سرقة المواطن فقط في حال وجود عداوة بينك وبينه.',
+                    '🔴 يمنع تكوين عداوة على اسباب تافه مثال ( الضرب بالايدي بسبب مشادة كلامية - او شخص صدمك بالمركبه و هرب - خطف لاجل السرقة - الخ...).',
+                    '🟢 يحق للمواطن سرقة العسكري في اذا كان هناك سناريو سرقة البنوك والمجوهرات والمراكز العسكرية كالميناء والمقرات ولا يشمل سرقة المحلات.',
+                    '🔴 عدم بناء العداوة بسبب العسكري كان يؤدي وظيفته.',
+                    '🟢 في حال تمت مداهمة حارة عصابة من قبل الشرطة يحق للعصابة سرقة العساكر في مكان الحارة.',
+                    '🔴 يمنع الخطف في شارع عام او امام العلن او في مواقع عامة مثل الوظائف او المراكز او المستشفى، لذلك يجب عليك استدراج الشخص الى مكان منعزل او ممر ضيق بحيث يكون بعيد عن الانظار بشكل عام.',
+                    '🟡 تحديد عدد اللاعبين للسرقة كحد اقصى :',
+                    '`سرقة منزل` عدد المجرمين | 2-4 عدد الشرطه | 5',
+                    '`سرقة الميناء` عدد المجرمين | 5 عدد الشرطه | 8',
+                    '`سرقة شاحنة البنك` عدد المجرمين | 2-4 عدد الشرطه | 4-6',
+                    '`سرقة محل اسلحة` عدد المجرمين | 4 عدد الشرطه | 6-8',
+                    '`سرقة البنك المركزي` عدد المجرمين | 6-10 عدد الشرطه | 8-12',
+                    '`سرقة بنك فليكا` عدد المجرمين | 4-6 عدد الشرطه | 6-8',
+                    '`سرقة محل مجوهرات` عدد المجرمين | 4-6 عدد الشرطه | 6-8',
+                    '`سرقة محل ملابس/سوبر ماركت/مطعم` عدد المجرمين | 1-4 عدد الشرطه | 4-6',
+                    'ــــــــــــــــــــــــــــــــــــــــــــــــ'
+                ]
+            },
+            glossary: {
+                title: 'المصطلحات المستخدمة', icon: 'fa-terminal',
+                items: [
+                    '`طلع من السيرفر` = راح ينام',
+                    '`ايديك` = الهوية',
+                    '`الديسكورد` = واتساب',
+                    '`الرول بلاي` = الحياة',
+                    '`أنت ملگلگ / عندك لاگ` = انت مصدع',
+                    '`صارلك كراش او فصل النت` = فصل مخي',
+                    '`سكن مخفي / سيارة مخفية` = صبغتك خربانه / صبغة السيارة خربانه',
+                    '`الماب مو محمل` = عندي مشكله بالنظر (دون الخروج عن الرول بلاي)',
+                    '`ابتعدت عن الجهاز` = اخذت غفوه مع تقمص الدور',
+                    '`تبند / جاه باند` = ترحل',
+                    '`شخص خرج عن الرول بلاي الرد يكون` = مو فاهم عليك',
+                    '`الرقابة` = الأمن الوقائي',
+                    '`تصوير` = الداش كام',
+                    '`البث` = السناب',
+                    '`ريستارت` = اعصار'
+                ]
+            }
+        };
+
+        const navLinks = document.querySelectorAll('.sidebar-nav a');
+        function setActiveLink(clickedLink) {
+            navLinks.forEach(link => link.classList.remove('active-link'));
+            if(clickedLink) clickedLink.classList.add('active-link');
+        }
+
+        // دالة فتح قسم القوانين بشكل عام
+        function openRules() {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('rulesSection').style.display = 'block';
+            setActiveLink(document.getElementById('rulesLink'));
+            
+            const firstTab = document.getElementById('tab-general');
+            if(firstTab) showRule('general', firstTab);
+        }
+
+        // دالة عرض محتوى القانون (تم إزالة scrollIntoView لحل مشكلة الجوال)
+        function showRule(category, element) {
+            const rule = rulesData[category];
+            if (!rule) return;
+            
+            let html = `<h3><i class="fas ${rule.icon}"></i> ${rule.title}</h3><ul>`;
+            rule.items.forEach(item => {
+                html += `<li><i class="fas fa-caret-left"></i> <span>${item.replace(/\n/g, '<br>')}</span></li>`;
+            });
+            html += `</ul><div class="edit-note"> [!] صلاحية الوصول ممنوحة: وثيقة قابلة للتعديل من الإدارة العُليا </div>`;
+            document.getElementById('ruleDisplay').innerHTML = html;
+            
+            document.querySelectorAll('.rule-tab').forEach(tab => tab.classList.remove('active-tab'));
+            if(element) {
+                element.classList.add('active-tab');
+                updateIndicator(element);
+                
+                // تمرير البار فقط بدون تحريك الشاشة
+                const navBar = document.getElementById('rulesNavBar');
+                const scrollLeft = element.offsetLeft - (navBar.offsetWidth / 2) + (element.offsetWidth / 2);
+                navBar.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // تحديث المؤشر الأحمر السفلي
+        function updateIndicator(element) {
+            const indicator = document.getElementById('navIndicator');
+            const navBar = document.getElementById('rulesNavBar');
+            const rightPos = navBar.scrollWidth - (element.offsetLeft + element.offsetWidth);
+            indicator.style.width = element.offsetWidth + 'px';
+            indicator.style.right = rightPos + 'px';
+        }
+
+        document.getElementById('rulesNavBar').addEventListener('scroll', function() {
+            const activeTab = document.querySelector('.rule-tab.active-tab');
+            if(activeTab) updateIndicator(activeTab);
+        });
+
+        window.addEventListener('resize', function() {
+            const activeTab = document.querySelector('.rule-tab.active-tab');
+            if(activeTab) updateIndicator(activeTab);
+        });
+
+        function showHome() {
+            document.getElementById('mainContent').style.display = 'grid';
+            document.getElementById('rulesSection').style.display = 'none';
+            setActiveLink(document.getElementById('homeLink'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('homeLink').addEventListener('click', function(e) { 
+            e.preventDefault(); 
+            showHome(); 
+        });
+
+        function playVideo() {
+            const container = document.getElementById('videoContainer');
+            const overlay = document.getElementById('videoOverlay');
+            overlay.style.display = 'none';
+            const iframe = document.createElement('iframe');
+            iframe.className = 'video-iframe';
+            iframe.src = '';
+            iframe.frameborder = '0';
+            iframe.allowfullscreen = true;
+            iframe.allow = 'autoplay; encrypted-media';
+            container.appendChild(iframe);
+        }
+    </script>
+</body>
+</html>
